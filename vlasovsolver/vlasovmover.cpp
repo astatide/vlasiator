@@ -390,9 +390,10 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
       rndState.seed(P::tstep);
 
       uint map_order=std::uniform_int_distribution<>(0,2)(rndState);
-      phiprof::Timer semilagAccTimer {"cell-semilag-acc"};
+      //RACE CONDITION
+      //phiprof::Timer semilagAccTimer {"cell-semilag-acc"};
       cpu_accelerate_cell(mpiGrid[cellID],popID,map_order,subcycleDt);
-      semilagAccTimer.stop();
+      //semilagAccTimer.stop();
    }
 
    //global adjust after each subcycle to keep number of blocks managable. Even the ones not

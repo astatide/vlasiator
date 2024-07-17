@@ -1026,7 +1026,7 @@ template<unsigned long int N> bool readFsGridVariable(
       }
    }
    phiprof::Timer updateGhostsTimer {"updateGhostCells"};
-   targetGrid.updateGhostCells();
+   targetGrid.updateGhostCells(3800);
    updateGhostsTimer.stop();
    return true;
 }

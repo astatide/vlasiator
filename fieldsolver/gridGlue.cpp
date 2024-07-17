@@ -6,11 +6,9 @@
 #include "../common.h"
 #include "gridGlue.hpp"
 
-
-
-
-
-
+// Extrae API
+#include <extrae.h>
+#include <extrae_user_events.h> // do we need this?
 
 /*
 Calculate the number of cells on the maximum refinement level overlapping the list of dccrg cells in cells.
@@ -139,7 +137,7 @@ void filterMoments(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid,
                                  };
 
    // Update momentsGrid Ghost Cells
-   momentsGrid.updateGhostCells(); 
+   momentsGrid.updateGhostCells(1200); 
 
 
    // Get size of local domain and create swapGrid for filtering
@@ -149,7 +147,9 @@ void filterMoments(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid,
    // Filtering Loop
    for (int blurPass = 0; blurPass < Parameters::maxFilteringPasses; blurPass++){
 
+      // it would be interesting to check and emit these dimensions and see whether each thread has the same amount of work, loop wise TODO
       // Blurring Pass
+      Extrae_event(11, mntDims[0]*mntDims[1]*mntDims[2]);
       #pragma omp parallel for collapse(2)
       for (FsGridTools::FsIndex_t k = 0; k < mntDims[2]; k++){
          for (FsGridTools::FsIndex_t j = 0; j < mntDims[1]; j++){
@@ -191,11 +191,12 @@ void filterMoments(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid,
             }
          }
       } //spatial loops
+      Extrae_event(11, 0);
 
       // Copy swapGrid back to momentsGrid
       momentsGrid=swapGrid;
       // Update Ghost Cells
-      momentsGrid.updateGhostCells();
+      momentsGrid.updateGhostCells(1300);
 
     }
 }

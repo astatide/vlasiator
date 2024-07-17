@@ -247,10 +247,10 @@ void propagateMagneticFieldSimple(
    phiprof::Timer mpiTimer {"MPI", {"MPI"}};
    if (RKCase == RK_ORDER1 || RKCase == RK_ORDER2_STEP2) {
       // Exchange PERBX,PERBY,PERBZ with neighbours
-      perBGrid.updateGhostCells();
+      perBGrid.updateGhostCells(700);
    } else { // RKCase == RK_ORDER2_STEP1
       // Exchange PERBX_DT2,PERBY_DT2,PERBZ_DT2 with neighbours
-      perBDt2Grid.updateGhostCells();
+      perBDt2Grid.updateGhostCells(800);
    }
    mpiTimer.stop();
 
@@ -284,10 +284,10 @@ void propagateMagneticFieldSimple(
    mpiTimer.start();
    if (RKCase == RK_ORDER1 || RKCase == RK_ORDER2_STEP2) {
       // Exchange PERBX,PERBY,PERBZ with neighbours
-      perBGrid.updateGhostCells();
+      perBGrid.updateGhostCells(900);
    } else { // RKCase == RK_ORDER2_STEP1
       // Exchange PERBX_DT2,PERBY_DT2,PERBZ_DT2 with neighbours
-      perBDt2Grid.updateGhostCells();
+      perBDt2Grid.updateGhostCells(1000);
    }
    mpiTimer.stop();
 

@@ -258,7 +258,7 @@ void initializeGrids(
    }
 
    // Update technicalGrid
-   technicalGrid.updateGhostCells(); // This needs to be done at some point
+   technicalGrid.updateGhostCells(3000); // This needs to be done at some point
 
    if (!P::isRestart && !P::writeFullBGB) {
       // If we are starting a new regular simulation, we need to prepare all cells with their initial state.
@@ -345,12 +345,12 @@ void initializeGrids(
    project.setProjectBField(perBGrid, BgBGrid, technicalGrid);
    setBTimer.stop();
    phiprof::Timer fsGridGhostTimer {"fsgrid-ghost-updates"};
-   perBGrid.updateGhostCells();
-   BgBGrid.updateGhostCells();
-   EGrid.updateGhostCells();
+   perBGrid.updateGhostCells(3100);
+   BgBGrid.updateGhostCells(3200);
+   EGrid.updateGhostCells(3300);
 
    // This will only have the BGB set up properly at this stage but we need the BGBvol for the Vlasov boundaries below.
-   volGrid.updateGhostCells();
+   volGrid.updateGhostCells(3400);
    fsGridGhostTimer.stop();
    phiprof::Timer getFieldsTimer {"getFieldsFromFsGrid"};
    getFieldsFromFsGrid(volGrid, BgBGrid, EGradPeGrid, technicalGrid, mpiGrid, cells);
@@ -385,8 +385,8 @@ void initializeGrids(
    } else {
       feedMomentsIntoFsGrid(mpiGrid, cells, momentsDt2Grid, technicalGrid, true);
    }
-   momentsGrid.updateGhostCells();
-   momentsDt2Grid.updateGhostCells();
+   momentsGrid.updateGhostCells(3500);
+   momentsDt2Grid.updateGhostCells(3600);
    finishFSGridTimer.stop();
 
    // Set this so CFL doesn't break
@@ -1553,7 +1553,7 @@ bool adaptRefinement(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGri
    mpiGrid.update_copies_of_remote_neighbors(NEAREST_NEIGHBORHOOD_ID);
 
    // Is this needed?
-   technicalGrid.updateGhostCells(); // This needs to be done at some point
+   technicalGrid.updateGhostCells(3700); // This needs to be done at some point
    for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
       updateRemoteVelocityBlockLists(mpiGrid, p, NEAREST_NEIGHBORHOOD_ID);
    }

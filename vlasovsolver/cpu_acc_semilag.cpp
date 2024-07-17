@@ -107,25 +107,25 @@ void cpu_accelerate_cell(SpatialCell* spatial_cell,
    switch(map_order){
       case 0: {
          //Map order XYZ
-         phiprof::Timer intersectionsTimer {intersections_id};
+         //phiprof::Timer intersectionsTimer {intersections_id};
          compute_intersections_1st(vmesh,bwd_transform, fwd_transform, 0, refLevel,
                                    intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk);
          compute_intersections_2nd(vmesh,bwd_transform, fwd_transform, 1, refLevel,
                                    intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk);
          compute_intersections_3rd(vmesh,bwd_transform, fwd_transform, 2, refLevel,
                                    intersection_z,intersection_z_di,intersection_z_dj,intersection_z_dk);
-         intersectionsTimer.stop();
-         phiprof::Timer mappingTimer {mapping_id};
+         //intersectionsTimer.stop();
+         //phiprof::Timer mappingTimer {mapping_id};
          map_1d(spatial_cell, popID, intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk,0); // map along x
          map_1d(spatial_cell, popID, intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk,1); // map along y
          map_1d(spatial_cell, popID, intersection_z,intersection_z_di,intersection_z_dj,intersection_z_dk,2); // map along z
-         mappingTimer.stop();
+         //mappingTimer.stop();
          break;
       }
          
       case 1: {
          //Map order YZX
-         phiprof::Timer intersectionsTimer{intersections_id};
+         //phiprof::Timer intersectionsTimer{intersections_id};
          compute_intersections_1st(vmesh, bwd_transform, fwd_transform, 1, refLevel,
                                    intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk);
          compute_intersections_2nd(vmesh, bwd_transform, fwd_transform, 2, refLevel,
@@ -133,17 +133,17 @@ void cpu_accelerate_cell(SpatialCell* spatial_cell,
          compute_intersections_3rd(vmesh, bwd_transform, fwd_transform, 0, refLevel,
                                    intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk);
       
-         intersectionsTimer.stop();
-         phiprof::Timer mappingTimer {mapping_id};
+         //intersectionsTimer.stop();
+         //phiprof::Timer mappingTimer {mapping_id};
          map_1d(spatial_cell, popID, intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk,1); // map along y
          map_1d(spatial_cell, popID, intersection_z,intersection_z_di,intersection_z_dj,intersection_z_dk,2); // map along z
          map_1d(spatial_cell, popID, intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk,0); // map along x
-         mappingTimer.stop();
+         //mappingTimer.stop();
          break;
       }
 
       case 2: {
-         phiprof::Timer intersectionsTimer{intersections_id};
+         //phiprof::Timer intersectionsTimer{intersections_id};
          //Map order Z X Y
          compute_intersections_1st(vmesh, bwd_transform, fwd_transform, 2, refLevel,
                                    intersection_z,intersection_z_di,intersection_z_dj,intersection_z_dk);
@@ -151,12 +151,12 @@ void cpu_accelerate_cell(SpatialCell* spatial_cell,
                                    intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk);
          compute_intersections_3rd(vmesh, bwd_transform, fwd_transform, 1, refLevel,
                                    intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk);
-         intersectionsTimer.stop();
-         phiprof::Timer mappingTimer {mapping_id};
+         //intersectionsTimer.stop();
+         //phiprof::Timer mappingTimer {mapping_id};
          map_1d(spatial_cell, popID, intersection_z,intersection_z_di,intersection_z_dj,intersection_z_dk,2); // map along z
          map_1d(spatial_cell, popID, intersection_x,intersection_x_di,intersection_x_dj,intersection_x_dk,0); // map along x
          map_1d(spatial_cell, popID, intersection_y,intersection_y_di,intersection_y_dj,intersection_y_dk,1); // map along y
-         mappingTimer.stop();
+         //mappingTimer.stop();
          break;
       }
    }

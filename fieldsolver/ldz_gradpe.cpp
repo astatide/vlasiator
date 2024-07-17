@@ -166,7 +166,7 @@ void calculateGradPeTermSimple(
    int computeTimerId {phiprof::initializeTimer("EgradPe compute cells")};
 
    phiprof::Timer mpiTimer {"EgradPe field update ghosts MPI", {"MPI"}};
-   dMomentsGrid.updateGhostCells();
+   dMomentsGrid.updateGhostCells(1100);
    mpiTimer.stop();
 
    // Calculate GradPe term

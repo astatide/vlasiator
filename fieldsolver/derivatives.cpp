@@ -334,27 +334,27 @@ void calculateDerivativesSimple(
       // standard case Exchange PERB* with neighbours
       // The update of PERB[XYZ] is needed after the system
       // boundary update of propagateMagneticFieldSimple.
-       perBGrid.updateGhostCells();
+       perBGrid.updateGhostCells(1500);
        if(communicateMoments) {
-         momentsGrid.updateGhostCells();
+         momentsGrid.updateGhostCells(1600);
        }
        break;
     case RK_ORDER2_STEP1:
       // Exchange PERB*_DT2,RHO_DT2,V*_DT2 with neighbours The
       // update of PERB[XYZ]_DT2 is needed after the system
       // boundary update of propagateMagneticFieldSimple.
-       perBDt2Grid.updateGhostCells();
+       perBDt2Grid.updateGhostCells(1700);
        if(communicateMoments) {
-         momentsDt2Grid.updateGhostCells();
+         momentsDt2Grid.updateGhostCells(1800);
        }
        break;
     case RK_ORDER2_STEP2:
       // Exchange PERB*,RHO,V* with neighbours The update of B
       // is needed after the system boundary update of
       // propagateMagneticFieldSimple.
-       perBGrid.updateGhostCells();
+       perBGrid.updateGhostCells(1900);
        if(communicateMoments) {
-         momentsGrid.updateGhostCells();
+         momentsGrid.updateGhostCells(2000);
        }
       break;
     default:
@@ -504,7 +504,7 @@ void calculateBVOLDerivativesSimple(
    int computeTimerId {phiprof::initializeTimer("FS derivatives BVOL compute cells")};
 
    phiprof::Timer commTimer {"BVOL derivatives ghost updates MPI", {"MPI"}};
-   volGrid.updateGhostCells();
+   volGrid.updateGhostCells(2100);
    commTimer.stop(N_cells,"Spatial Cells");
 
    // Calculate derivatives
@@ -648,7 +648,7 @@ void calculateCurvatureSimple(
    int computeTimerId {phiprof::initializeTimer("Calculate curvature compute cells")};
 
    phiprof::Timer commTimer {"Calculate curvature ghost updates MPI", {"MPI"}};
-   volGrid.updateGhostCells();
+   volGrid.updateGhostCells(2200);
    commTimer.stop(N_cells,"Spatial Cells");
 
    #pragma omp parallel

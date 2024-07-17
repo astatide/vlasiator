@@ -496,7 +496,7 @@ void SysBoundary::classifyCells(dccrg::Dccrg<spatial_cell::SpatialCell, dccrg::C
    // In dccrg initialization the max number of boundary layers is set to 3.
    const uint MAX_NUMBER_OF_BOUNDARY_LAYERS = 3 * pow(2, mpiGrid.get_maximum_refinement_level());
 
-   technicalGrid.updateGhostCells();
+   technicalGrid.updateGhostCells(3900);
 
    // loop through max number of layers
    for (uint layer = 1; layer <= MAX_NUMBER_OF_BOUNDARY_LAYERS; ++layer) {
@@ -528,7 +528,7 @@ void SysBoundary::classifyCells(dccrg::Dccrg<spatial_cell::SpatialCell, dccrg::C
          }
       }
       // This needs an update every iteration as belongsToLayer() needs up to date data.
-      technicalGrid.updateGhostCells();
+      technicalGrid.updateGhostCells(4000);
    }
 
 // One more pass to make sure, in particular if the ionosphere is wide enough
@@ -547,7 +547,7 @@ void SysBoundary::classifyCells(dccrg::Dccrg<spatial_cell::SpatialCell, dccrg::C
       }
    }
 
-   technicalGrid.updateGhostCells();
+   technicalGrid.updateGhostCells(4100);
 
    const array<FsGridTools::FsSize_t,3> fsGridDimensions = technicalGrid.getGlobalSize();
 
@@ -605,7 +605,7 @@ void SysBoundary::classifyCells(dccrg::Dccrg<spatial_cell::SpatialCell, dccrg::C
       }
    }
 
-   technicalGrid.updateGhostCells();
+   technicalGrid.updateGhostCells(4200);
 }
 
 /*!\brief Apply the initial state to all system boundary cells.

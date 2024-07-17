@@ -54,6 +54,9 @@
 #include "fieldsolver/gridGlue.hpp"
 #include "fieldsolver/derivatives.hpp"
 
+// Extrae API
+#include <extrae.h>
+
 #ifdef CATCH_FPE
 #include <fenv.h>
 #include <signal.h>
@@ -325,6 +328,16 @@ int main(int argn,char* args[]) {
    }
    
    // After the MPI_T settings we can init MPI all right.
+   // Extrae event constants for profiling
+   Extrae_init();
+   Extrae_shutdown();
+   extrae_type_t EE_INITIALIZATION = 20000023;
+   extrae_type_t EE_ITERATION = 20000024;
+   //const int EE_ITERATION_STOP = 2001;
+   int EE_START = 0;
+   int EE_STOP = 1;
+
+   //Extrae_event(EE_INITIALIZATION, EE_START);
    MPI_Init_thread(&argn,&args,required,&provided);
    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
    if (required > provided){
@@ -642,7 +655,7 @@ int main(int argn,char* args[]) {
    }
 
    phiprof::Timer getFieldsTimer {"getFieldsFromFsGrid"};
-   volGrid.updateGhostCells();
+   volGrid.updateGhostCells(100);
    getFieldsFromFsGrid(volGrid, BgBGrid, EGradPeGrid, technicalGrid, mpiGrid, cells);
    getFieldsTimer.stop();
 
@@ -662,7 +675,7 @@ int main(int argn,char* args[]) {
          RK_ORDER1, // Update and compute on non-dt2 grids.
          false // Don't communicate moments, they are not needed here.
       );
-      dPerBGrid.updateGhostCells();
+      dPerBGrid.updateGhostCells(200);
    }
    FieldTracing::calculateIonosphereFsgridCoupling(technicalGrid, perBGrid, dPerBGrid, SBC::ionosphereGrid.nodes, SBC::Ionosphere::radius);
    SBC::ionosphereGrid.initSolver(!P::isRestart); // If it is a restart we do not want to zero out everything
@@ -785,6 +798,10 @@ int main(int argn,char* args[]) {
    }
 
    initTimer.stop();
+   // Initialization is about to finish, so restart Extrae and mark it with a flag.
+   //Extrae_restart();
+   //Extrae_event(EE_INITIALIZATION, EE_STOP);
+   //Extrae_shutdown();
 
    // ***********************************
    // ***** INITIALIZATION COMPLETE *****
@@ -845,10 +862,15 @@ int main(int argn,char* args[]) {
    double beforeSimulationTime=P::t_min;
    double beforeStep=P::tstep_min;
    
+   // Here's the actual loop that constitutes an iteration.
    while(P::tstep <= P::tstep_max  &&
          P::t-P::dt <= P::t_max+DT_EPSILON &&
          wallTimeRestartCounter <= P::exitAfterRestarts) {
-      
+
+      if (P::tstep == 2149 ) {
+         Extrae_restart();
+         Extrae_event(EE_ITERATION, P::tstep); // signal that we've started the iteration
+      }
       addTimedBarrier("barrier-loop-start");
       
       phiprof::Timer ioTimer {"IO"};
@@ -1229,8 +1251,8 @@ int main(int argn,char* args[]) {
 
          phiprof::Timer getFieldsTimer {"getFieldsFromFsGrid"};
          // Copy results back from fsgrid.
-         volGrid.updateGhostCells();
-         technicalGrid.updateGhostCells();
+         volGrid.updateGhostCells(300);
+         technicalGrid.updateGhostCells(400);
          getFieldsFromFsGrid(volGrid, BgBGrid, EGradPeGrid, technicalGrid, mpiGrid, cells);
          getFieldsTimer.stop();
          propagateTimer.stop(cells.size(),"SpatialCells");
@@ -1329,6 +1351,12 @@ int main(int argn,char* args[]) {
       ++P::tstep;
       P::t += P::dt;
 
+
+      // lmao we have to increase the iter count by one because we literally just added one to the counter derp derp
+      if (P::tstep == 2150) {
+         Extrae_event(EE_ITERATION, 0); // signal that we've stopped the iteration
+         Extrae_shutdown();
+      }
    }
 
    double after = MPI_Wtime();
@@ -1385,6 +1413,9 @@ int main(int argn,char* args[]) {
    if(overrideMCAompio) {
       MPI_T_finalize();
    }
+   //Extrae_define_event_type(&EE_INITIALIZATION, (char*)"Vlasiator Initialization", 0, NULL, NULL);
+   //Extrae_define_event_type(&EE_ITERATION, (char*)"Vlasiator Iteration", 0, NULL, NULL);
    MPI_Finalize();
+   Extrae_fini();
    return 0;
 }

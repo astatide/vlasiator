@@ -1667,16 +1667,16 @@ void calculateUpwindedElectricFieldSimple(
    phiprof::Timer mpiTimer {"Electric field ghost updates MPI", {"MPI"}};
    // Update ghosts if necessary, unless previous terms have already updated them
    if(P::ohmHallTerm > 0) {
-      EHallGrid.updateGhostCells();
+      EHallGrid.updateGhostCells(2400);
    }
    if(P::ohmGradPeTerm > 0) {
-      EGradPeGrid.updateGhostCells();
+      EGradPeGrid.updateGhostCells(2500);
    }
    if(P::ohmHallTerm == 0) {
-      dPerBGrid.updateGhostCells();
+      dPerBGrid.updateGhostCells(2600);
    }
    if(P::ohmHallTerm == 0 && P::ohmGradPeTerm == 0) {
-      dMomentsGrid.updateGhostCells();
+      dMomentsGrid.updateGhostCells(2700);
    }
    
    mpiTimer.stop();
@@ -1733,9 +1733,9 @@ void calculateUpwindedElectricFieldSimple(
    mpiTimer.start();
    // Exchange electric field with neighbouring processes
    if (RKCase == RK_ORDER1 || RKCase == RK_ORDER2_STEP2) {
-      EGrid.updateGhostCells();
+      EGrid.updateGhostCells(2800);
    } else { 
-      EDt2Grid.updateGhostCells();
+      EDt2Grid.updateGhostCells(2900);
    }
    mpiTimer.stop();
    

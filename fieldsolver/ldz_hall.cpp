@@ -813,9 +813,9 @@ void calculateHallTermSimple(
    phiprof::Timer hallTimer {"Calculate Hall term"};
    phiprof::Timer mpiTimer {"EHall ghost updates MPI", {"MPI"}};
    int computeTimerId {phiprof::initializeTimer("EHall compute cells")};
-   dPerBGrid.updateGhostCells();
+   dPerBGrid.updateGhostCells(500);
    if(P::ohmGradPeTerm == 0) {
-      dMomentsGrid.updateGhostCells();
+      dMomentsGrid.updateGhostCells(600);
    }
    mpiTimer.stop();
 
