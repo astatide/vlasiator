@@ -1,0 +1,101 @@
+# -*- mode: makefile -*-
+CMP = mpiicpx
+LNK = mpiicpx
+
+#======== Vectorization ==========
+#Set vector backend type for vlasov solvers, sets precision and length. 
+#NOTE this has to have the same precision as the distribution function define (DISTRIBUTION_FP_PRECISION)
+#Options: 
+# AVX:	    VEC4D_AGNER, VEC4F_AGNER, VEC8F_AGNER
+# AVX512:   VEC8D_AGNER, VEC16F_AGNER
+# Fallback: VEC4D_FALLBACK, VEC4F_FALLBACK, VEC8F_FALLBACK
+
+ifeq ($(DISTRIBUTION_FP_PRECISION),SPF)
+#Single-precision        
+	VECTORCLASS = VEC16F_AGNER
+else
+#Double-precision
+	VECTORCLASS = VEC8D_AGNER
+endif
+
+FLAGS = 
+
+#GNU flags:
+CXXFLAGS += -O3 -qopenmp -funroll-loops -std=c++17 -W -Wall -Wno-unused -mavx2
+testpackage: CXXFLAGS = -O2 -qopenmp -funroll-loops -std=c++17  -mavx
+
+MATHFLAGS = -ffast-math -fno-finite-math-only
+testpackage: MATHFLAGS = -fno-unsafe-math-optimizations
+
+LDFLAGS = 
+LIB_MPI = -lgomp
+
+#======== PAPI ==========
+#Add PAPI_MEM define to use papi to report memory consumption?
+
+testpackage: 
+
+
+#======== Allocator =========
+#Use jemalloc instead of system malloc to reduce memory fragmentation? https://github.com/jemalloc/jemalloc
+#Configure jemalloc with  --with-jemalloc-prefix=je_ when installing it
+CXXFLAGS += -DUSE_JEMALLOC -DJEMALLOC_NO_DEMANGLE
+testpackage: CXXFLAGS += -DUSE_JEMALLOC -DJEMALLOC_NO_DEMANGLE
+
+
+#======= Compiler and compilation flags =========
+# NOTES on compiler flags:
+# CXXFLAGS is for compiler flags, they are always used
+# MATHFLAGS are for special math etc. flags, these are only applied on solver functions
+# LDFLAGS flags for linker
+
+#-DNO_WRITE_AT_ALL:  Define to disable write at all to 
+#                    avoid memleak (much slower IO)
+#-DMPICH_IGNORE_CXX_SEEK: Ignores some multiple definition 
+#                         errors that come up when using 
+#                         mpi.h in c++ on Cray
+
+CXXFLAGS += -DMPICH_IGNORE_CXX_SEEK
+testpackage: CXXFLAGS += -DMPICH_IGNORE_CXX_SEEK
+
+# BOOST_VERSION = current trilinos version
+# ZOLTAN_VERSION = current trilinos verson
+
+#======== Libraries ===========
+
+LIBRARY_PREFIX = /gpfs/projects/bsc33/bsc033626/LIBS
+
+
+#compiled libraries
+INC_BOOST = -I/apps/GPP/BOOST/1.75.0/INTEL/OPENMPI/include
+LIB_BOOST = -L/apps/GPP/BOOST/1.75.0/INTEL/OPENMPI/lib -lboost_program_options
+
+INC_ZOLTAN = -I/gpfs/projects/bsc33/bsc033626/LIBS/zoltan/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/include
+LIB_ZOLTAN = -L/gpfs/projects/bsc33/bsc033626/LIBS/zoltan/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/lib -lzoltan
+
+INC_JEMALLOC = -I/gpfs/projects/bsc33/bsc033626/LIBS/jemalloc/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION-5.3.0/include
+LIB_JEMALLOC = -L/gpfs/projects/bsc33/bsc033626/LIBS/jemalloc/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION-5.3.0/lib -ljemalloc
+
+INC_VLSV = -I/gpfs/projects/bsc33/bsc033626/LIBS/vlsv/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/include
+LIB_VLSV = -L/gpfs/projects/bsc33/bsc033626/LIBS/vlsv/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/lib -lvlsv
+
+INC_PROFILE = -I/gpfs/projects/bsc33/bsc033626/LIBS/phiprof/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/include
+LIB_PROFILE = -L/gpfs/projects/bsc33/bsc033626/LIBS/phiprof/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/lib -lnophiprof
+
+
+
+
+#header libraries
+
+INC_EIGEN = -isystem ./submodules/eigen/
+INC_DCCRG = -I./submodules/dccrg
+INC_VECTORCLASS = -isystem ./submodules/vectorclass/ -isystem ./submodules/vectorclass-addon/vector3d/
+INC_FSGRID = -I./submodules/fsgrid
+LDFLAGS += /apps/GPP/BSCTOOLS/extrae/4.1.7/impi_2021_10_0/lib/libompitrace.so -v
+LDFLAGS += -liomp5 -Wl,--as-needed
+LDFLAGS += /gpfs/projects/bsc33/bsc033626/LIBS/phiprof/VLASIATOR.INTEL.DEV.EXTRAE.INSTRUMENTATION/lib/libnophiprof.so
+CXXFLAGS += -I/gpfs/projects/bsc33/bsc033626
+LD_LIBRARY_PATH += /gpfs/projects/bsc33/bsc033626/lib:/apps/GPP/PAPI/7.0.1/GCC/lib:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/lib/release:/apps/GPP/BSCTOOLS/deps/papi/7.1.0/lib:/apps/GPP/BSCTOOLS/deps/libxml/2.9.12/lib:/apps/GPP/BSCTOOLS/deps/dyninst/13.0.0/lib:/apps/GPP/BSCTOOLS/deps/libdwarf/20180129/lib:/apps/GPP/BSCTOOLS/deps/libelf/0.186/lib:/apps/GPP/BSCTOOLS/deps/binutils/2.42/lib:/apps/GPP/BSCTOOLS/deps/libunwind/1.8.1/lib:/apps/GPP/BSCTOOLS/deps/boost/1.84.0/lib:/apps/GPP/BSCTOOLS/extrae/4.1.7/impi_2021_10_0/lib:/apps/GPP/BOOST/1.75.0/INTEL/IMPI/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/mkl/2024.1/lib/intel64:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/libfabric/lib:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../vpl/latest/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../tbb/latest/lib/intel64/gcc4.8:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../itac/latest/slib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../ipp/latest/lib/intel64:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../ippcp/latest/lib/intel64:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../dnnl/latest/cpu_dpcpp_gpu_dpcpp/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../dal/latest/lib/intel64:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/../../ccl/latest/lib/cpu_gpu_dpcpp:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/lib/x64:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/lib/emu:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/compiler/latest/compiler/lib/intel64_lin
+LIBRARY_PATH += /gpfs/projects/bsc33/bsc033626/lib:/apps/GPP/PAPI/7.0.1/GCC/lib:/apps/GPP/BOOST/1.75.0/INTEL/IMPI/lib:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/mkl/2024.1/lib/intel64:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/libfabric/lib:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/lib:/gpfs/apps/MN5/GPP/ONEAPI/2023.2.0/mpi/2021.10.0/lib/release
+CPLUS_INCLUDE_PATH += /gpfs/projects/bsc33/bsc033626/include:/apps/GPP/PAPI/7.0.1/GCC/include/ncurses:/apps/GPP/PAPI/7.0.1/GCC/include:/apps/GPP/BOOST/1.75.0/INTEL/IMPI/include:/gpfs/projects/bsc33/bsc033626/include:/apps/GPP/PAPI/7.0.1/GCC/include/ncurses:/apps/GPP/PAPI/7.0.1/GCC/include:/apps/GPP/BSCTOOLS/extrae/4.1.7/impi_2021_10_0/include:/apps/GPP/BOOST/1.75.0/INTEL/IMPI/include:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/mkl/2024.1/include
+C_INCLUDE_PATH = /gpfs/projects/bsc33/bsc033626/include:/apps/GPP/PAPI/7.0.1/GCC/include/ncurses:/apps/GPP/PAPI/7.0.1/GCC/include:/apps/GPP/BSCTOOLS/extrae/4.1.7/impi_2021_10_0/include:/apps/GPP/BOOST/1.75.0/INTEL/IMPI/include:/gpfs/apps/MN5/GPP/ONEAPI/2024.1/mkl/2024.1/include
